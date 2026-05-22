@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GOAT 메모장 🐐</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <div id="titlebar">
+      <span id="title-text">제목 없음 - GOAT 메모장 🐐</span>
+      <div id="window-controls">
+        <button id="btn-minimize" title="최소화">─</button>
+        <button id="btn-close" title="닫기">✕</button>
+      </div>
+    </div>
+
+    <div id="menubar">
+      <div class="menu-item" id="menu-file">
+        <span>파일(F)</span>
+        <div class="dropdown" id="dropdown-file">
+          <button data-action="new">새로 만들기 <span class="shortcut">Ctrl+N</span></button>
+          <button data-action="open">열기... <span class="shortcut">Ctrl+O</span></button>
+          <hr>
+          <button data-action="save">저장 <span class="shortcut">Ctrl+S</span></button>
+          <button data-action="saveas">다른 이름으로 저장...</button>
+          <hr>
+          <button data-action="print">인쇄... <span class="shortcut">Ctrl+P</span></button>
+        </div>
+      </div>
+
+      <div class="menu-item" id="menu-edit">
+        <span>편집(E)</span>
+        <div class="dropdown" id="dropdown-edit">
+          <button data-action="undo">실행 취소 <span class="shortcut">Ctrl+Z</span></button>
+          <hr>
+          <button data-action="cut">잘라내기 <span class="shortcut">Ctrl+X</span></button>
+          <button data-action="copy">복사 <span class="shortcut">Ctrl+C</span></button>
+          <button data-action="paste">붙여넣기 <span class="shortcut">Ctrl+V</span></button>
+          <button data-action="delete">삭제 <span class="shortcut">Del</span></button>
+          <hr>
+          <button data-action="find">찾기... <span class="shortcut">Ctrl+F</span></button>
+          <button data-action="replace">바꾸기... <span class="shortcut">Ctrl+H</span></button>
+          <button data-action="goto">이동... <span class="shortcut">Ctrl+G</span></button>
+          <hr>
+          <button data-action="selectall">모두 선택 <span class="shortcut">Ctrl+A</span></button>
+          <button data-action="datetime">날짜/시간 <span class="shortcut">F5</span></button>
+        </div>
+      </div>
+
+      <div class="menu-item" id="menu-format">
+        <span>서식(O)</span>
+        <div class="dropdown" id="dropdown-format">
+          <button data-action="wordwrap">자동 줄 바꿈</button>
+          <button data-action="font">글꼴...</button>
+        </div>
+      </div>
+
+      <div class="menu-item" id="menu-view">
+        <span>보기(V)</span>
+        <div class="dropdown" id="dropdown-view">
+          <button data-action="zoom-in">확대 <span class="shortcut">Ctrl++</span></button>
+          <button data-action="zoom-out">축소 <span class="shortcut">Ctrl+-</span></button>
+          <button data-action="zoom-reset">기본 확대/축소 <span class="shortcut">Ctrl+0</span></button>
+          <hr>
+          <button data-action="statusbar">상태 표시줄</button>
+        </div>
+      </div>
+
+      <div class="menu-item" id="menu-goat">
+        <span>🐐 고트</span>
+        <div class="dropdown" id="dropdown-goat">
+          <button data-action="goat-toggle">염소 소리 ON/OFF</button>
+          <button data-action="goat-volume">볼륨 조절...</button>
+          <button data-action="goat-mode">슈퍼 고트 모드</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="editor-container">
+      <textarea id="editor" spellcheck="false" placeholder="여기에 메모를 입력하세요... (염소가 기다리고 있어요 🐐)"></textarea>
+    </div>
+
+    <div id="statusbar">
+      <span id="status-ln">1행</span>
+      <span id="status-col">1열</span>
+      <span id="status-chars">0자</span>
+      <span id="status-encoding">UTF-8</span>
+      <span id="status-goat">🐐 염소 ON</span>
+    </div>
+  </div>
+
+  <!-- 찾기/바꾸기 모달 -->
+  <div id="modal-find" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-title">찾기</div>
+      <div class="modal-body">
+        <label>찾을 내용:</label>
+        <input type="text" id="find-input" placeholder="검색어 입력...">
+        <div class="modal-options">
+          <label><input type="checkbox" id="find-case"> 대/소문자 구분</label>
+          <label><input type="checkbox" id="find-wrap" checked> 순환 검색</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="find-prev">이전 찾기</button>
+        <button id="find-next">다음 찾기</button>
+        <button class="modal-close" data-modal="modal-find">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-replace" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-title">바꾸기</div>
+      <div class="modal-body">
+        <label>찾을 내용:</label>
+        <input type="text" id="replace-find-input" placeholder="검색어 입력...">
+        <label>바꿀 내용:</label>
+        <input type="text" id="replace-input" placeholder="바꿀 내용 입력...">
+        <div class="modal-options">
+          <label><input type="checkbox" id="replace-case"> 대/소문자 구분</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="replace-one">바꾸기</button>
+        <button id="replace-all">모두 바꾸기</button>
+        <button class="modal-close" data-modal="modal-replace">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-goto" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-title">이동</div>
+      <div class="modal-body">
+        <label>줄 번호:</label>
+        <input type="number" id="goto-input" min="1" placeholder="줄 번호 입력...">
+      </div>
+      <div class="modal-footer">
+        <button id="goto-go">이동</button>
+        <button class="modal-close" data-modal="modal-goto">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-font" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-title">글꼴</div>
+      <div class="modal-body">
+        <label>글꼴:</label>
+        <select id="font-family">
+          <option value="'Noto Sans KR', sans-serif">Noto Sans KR</option>
+          <option value="'Malgun Gothic', sans-serif">맑은 고딕</option>
+          <option value="'Courier New', monospace" selected>Courier New</option>
+          <option value="'D2Coding', monospace">D2Coding</option>
+          <option value="Georgia, serif">Georgia</option>
+        </select>
+        <label>크기:</label>
+        <input type="number" id="font-size" value="16" min="8" max="72">
+        <label>스타일:</label>
+        <div class="modal-options">
+          <label><input type="checkbox" id="font-bold"> 굵게</label>
+          <label><input type="checkbox" id="font-italic"> 기울임</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="font-apply">적용</button>
+        <button class="modal-close" data-modal="modal-font">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-volume" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-title">🐐 염소 볼륨</div>
+      <div class="modal-body">
+        <label>볼륨: <span id="volume-label">70%</span></label>
+        <input type="range" id="volume-slider" min="0" max="100" value="70">
+        <label>염소 유형:</label>
+        <select id="goat-type">
+          <option value="classic">일반 염소</option>
+          <option value="baby">아기 염소</option>
+          <option value="angry">화난 염소</option>
+          <option value="happy">신난 염소</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button id="volume-test">테스트 🐐</button>
+        <button class="modal-close" data-modal="modal-volume">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 알림 토스트 -->
+  <div id="toast" class="hidden"></div>
+
+  <!-- 저장 input (hidden) -->
+  <a id="save-link" style="display:none"></a>
+  <input type="file" id="open-file" accept=".txt" style="display:none">
+
+  <script src="goat.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
