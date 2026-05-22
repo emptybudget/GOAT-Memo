@@ -184,8 +184,9 @@
           <div class="upload-row">
             <button id="upload-audio-btn">📂 파일 선택...</button>
             <span id="upload-filename">기본 합성음 사용 중</span>
+            <button id="edit-audio-btn" style="display:none">✂️ 편집</button>
           </div>
-          <button id="upload-clear-btn" class="clear-btn" style="display:none">✕ 삭제하고 기본 소리로</button>
+          <button id="upload-clear-btn" class="clear-btn" style="display:none">✕ 삭제 (기본 소리로 복귀)</button>
         </div>
 
         <label>합성 염소 유형 (업로드 없을 때):</label>
@@ -203,6 +204,32 @@
     </div>
   </div>
 
+  <!-- 오디오 편집기 모달 -->
+  <div id="modal-editor" class="modal hidden">
+    <div class="modal-content editor-modal">
+      <div class="modal-title">✂️ 오디오 편집 — 트림</div>
+      <div class="modal-body">
+        <div id="waveform-wrap">
+          <canvas id="waveform-canvas"></canvas>
+        </div>
+        <div class="trim-info">
+          <span>시작 <b id="trim-start-val">0.00s</b></span>
+          <span>끝 <b id="trim-end-val">0.00s</b></span>
+          <span>선택 길이 <b id="trim-dur-val">0.00s</b></span>
+          <span class="trim-total">전체 <b id="trim-total-val">0.00s</b></span>
+        </div>
+        <div class="trim-hint">
+          초록 ▲ 시작점 &nbsp;|&nbsp; 빨강 ▲ 끝점 &nbsp;|&nbsp; 드래그로 조절
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="editor-preview">▶ 미리듣기</button>
+        <button id="editor-apply">✓ 적용</button>
+        <button id="editor-close">닫기</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 알림 토스트 -->
   <div id="toast" class="hidden"></div>
 
@@ -212,6 +239,7 @@
   <input type="file" id="audio-file" accept="audio/*" style="display:none">
 
   <script src="goat.js"></script>
+  <script src="audio-editor.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

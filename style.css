@@ -365,6 +365,53 @@ body.super-goat #statusbar {
   background: #1a0a00;
 }
 
+/* ───── 오디오 편집기 모달 ───── */
+.editor-modal {
+  min-width: 520px;
+}
+
+#waveform-wrap {
+  width: 100%;
+  background: #0d1117;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  cursor: default;
+}
+
+#waveform-canvas {
+  display: block;
+  width: 100%;
+}
+
+.trim-info {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  padding: 6px 2px;
+}
+
+.trim-info span {
+  color: var(--text-muted);
+}
+
+.trim-info b {
+  color: var(--goat-gold);
+  font-weight: 600;
+}
+
+.trim-total {
+  margin-left: auto;
+}
+
+.trim-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2px 0;
+}
+
 /* ───── 오디오 업로드 섹션 ───── */
 .upload-section {
   display: flex;

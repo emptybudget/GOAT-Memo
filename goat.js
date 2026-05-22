@@ -5,8 +5,14 @@ const GoatSound = (() => {
   let enabled = true;
   let goatType = 'classic';
   let superMode = false;
-  let customBuffer = null;   // 업로드된 오디오의 AudioBuffer
+  let defaultBuffer = null;  // goat-default.mp3 (내장 기본 소리)
+  let customBuffer = null;   // 사용자가 업로드한 오디오
   let customFileName = null;
+  let trimStart = 0;
+  let trimEnd = Infinity;
+
+  // 현재 활성 버퍼 (커스텀 > 기본 > null)
+  function activeBuffer() { return customBuffer || defaultBuffer; }
 
   // AudioContext를 처음 사용할 때 생성 (브라우저 정책 대응)
   function getCtx() {
@@ -138,23 +144,30 @@ const GoatSound = (() => {
     });
   }
 
-  // 커스텀 오디오 재생 (AudioBuffer → 빠른 중첩 재생 가능)
-  function playCustom() {
-    if (!customBuffer) return;
+  // 오디오 버퍼 재생 (빠른 중첩 재생 가능)
+  function playBuffer(buf, offsetSec, durationSec) {
     const ac = getCtx();
     const source = ac.createBufferSource();
-    source.buffer = customBuffer;
+    source.buffer = buf;
     const gain = ac.createGain();
     gain.gain.value = volume;
     source.connect(gain);
     gain.connect(ac.destination);
-    source.start();
+    source.start(0, offsetSec, durationSec);
+  }
+
+  function playCustom() {
+    const buf = activeBuffer();
+    if (!buf) return;
+    const start = trimStart;
+    const end = Math.min(trimEnd, buf.duration);
+    playBuffer(buf, start, end - start);
   }
 
   return {
     play(key) {
       if (!enabled) return;
-      if (customBuffer) {
+      if (activeBuffer()) {
         playCustom();
         return;
       }
@@ -183,25 +196,47 @@ const GoatSound = (() => {
     setSuperMode(v) { superMode = v; },
     isSuperMode() { return superMode; },
     test() {
-      if (customBuffer) { playCustom(); return; }
+      if (activeBuffer()) { playCustom(); return; }
       bleat(goatType);
     },
 
-    // 오디오 파일 업로드: File 객체를 받아서 AudioBuffer로 디코딩
+    // 앱 시작 시 기본 소리 로드
+    async loadDefault() {
+      try {
+        const ac = getCtx();
+        const res = await fetch('goat-default.mp3');
+        const arrayBuffer = await res.arrayBuffer();
+        defaultBuffer = await ac.decodeAudioData(arrayBuffer);
+        trimStart = 0;
+        trimEnd = defaultBuffer.duration;
+      } catch (_) { /* 파일 없으면 합성음 사용 */ }
+    },
+
+    // 사용자 오디오 파일 업로드
     async loadAudio(file) {
       const ac = getCtx();
       const arrayBuffer = await file.arrayBuffer();
       customBuffer = await ac.decodeAudioData(arrayBuffer);
       customFileName = file.name;
+      trimStart = 0;
+      trimEnd = customBuffer.duration;
       return file.name;
     },
 
+    // 사용자 업로드 제거 → 기본 소리로 복귀
     clearAudio() {
       customBuffer = null;
       customFileName = null;
+      trimStart = 0;
+      trimEnd = defaultBuffer ? defaultBuffer.duration : Infinity;
     },
 
+    setTrim(s, e) { trimStart = s; trimEnd = e; },
+    getTrimStart() { return trimStart; },
+    getTrimEnd() { return trimEnd; },
+    getBuffer() { return activeBuffer(); },
     getCustomFileName() { return customFileName; },
     hasCustomAudio() { return customBuffer !== null; },
+    hasDefaultAudio() { return defaultBuffer !== null; },
   };
 })();

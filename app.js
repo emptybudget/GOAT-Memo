@@ -466,6 +466,7 @@ document.getElementById('audio-file').addEventListener('change', async function(
     nameEl.textContent = name;
     nameEl.classList.add('has-file');
     document.getElementById('upload-clear-btn').style.display = 'block';
+    document.getElementById('edit-audio-btn').style.display = 'inline-block';
     toast('🐐 내 염소 소리 적용됨: ' + name);
     GoatSound.test();
   } catch (e) {
@@ -480,7 +481,26 @@ document.getElementById('upload-clear-btn').addEventListener('click', () => {
   nameEl.textContent = '기본 합성음 사용 중';
   nameEl.classList.remove('has-file');
   document.getElementById('upload-clear-btn').style.display = 'none';
+  document.getElementById('edit-audio-btn').style.display = 'none';
   toast('기본 합성 염소 소리로 변경됨');
+});
+
+// ───── 오디오 편집기 ─────
+document.getElementById('edit-audio-btn').addEventListener('click', () => {
+  AudioEditor.init();
+  AudioEditor.open(GoatSound.getBuffer());
+});
+
+document.getElementById('editor-preview').addEventListener('click', () => {
+  AudioEditor.preview();
+});
+
+document.getElementById('editor-apply').addEventListener('click', () => {
+  AudioEditor.apply();
+});
+
+document.getElementById('editor-close').addEventListener('click', () => {
+  AudioEditor.close();
 });
 
 // ───── 모달 열기/닫기 ─────
@@ -547,3 +567,11 @@ window.addEventListener('beforeunload', (e) => {
 updateStatus();
 setTitle(null, false);
 editor.focus();
+
+// 기본 염소 소리 로드 (goat-default.mp3)
+GoatSound.loadDefault().then(() => {
+  if (GoatSound.hasDefaultAudio()) {
+    document.getElementById('upload-filename').textContent = '기본 염소 소리 사용 중';
+    document.getElementById('edit-audio-btn').style.display = 'inline-block';
+  }
+});
