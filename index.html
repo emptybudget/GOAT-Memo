@@ -174,11 +174,21 @@
 
   <div id="modal-volume" class="modal hidden">
     <div class="modal-content">
-      <div class="modal-title">🐐 염소 볼륨</div>
+      <div class="modal-title">🐐 염소 소리 설정</div>
       <div class="modal-body">
         <label>볼륨: <span id="volume-label">70%</span></label>
         <input type="range" id="volume-slider" min="0" max="100" value="70">
-        <label>염소 유형:</label>
+
+        <div class="upload-section">
+          <label>내 염소 소리 업로드:</label>
+          <div class="upload-row">
+            <button id="upload-audio-btn">📂 파일 선택...</button>
+            <span id="upload-filename">기본 합성음 사용 중</span>
+          </div>
+          <button id="upload-clear-btn" class="clear-btn" style="display:none">✕ 삭제하고 기본 소리로</button>
+        </div>
+
+        <label>합성 염소 유형 (업로드 없을 때):</label>
         <select id="goat-type">
           <option value="classic">일반 염소</option>
           <option value="baby">아기 염소</option>
@@ -199,6 +209,7 @@
   <!-- 저장 input (hidden) -->
   <a id="save-link" style="display:none"></a>
   <input type="file" id="open-file" accept=".txt" style="display:none">
+  <input type="file" id="audio-file" accept="audio/*" style="display:none">
 
   <script src="goat.js"></script>
   <script src="app.js"></script>

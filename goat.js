@@ -1,10 +1,12 @@
-// 🐐 GOAT Sound Engine — Web Audio API로 염소 울음소리 합성
+// 🐐 GOAT Sound Engine — Web Audio API로 염소 울음소리 합성 + 커스텀 오디오 지원
 const GoatSound = (() => {
   let ctx = null;
   let volume = 0.7;
   let enabled = true;
   let goatType = 'classic';
   let superMode = false;
+  let customBuffer = null;   // 업로드된 오디오의 AudioBuffer
+  let customFileName = null;
 
   // AudioContext를 처음 사용할 때 생성 (브라우저 정책 대응)
   function getCtx() {
@@ -136,18 +138,33 @@ const GoatSound = (() => {
     });
   }
 
+  // 커스텀 오디오 재생 (AudioBuffer → 빠른 중첩 재생 가능)
+  function playCustom() {
+    if (!customBuffer) return;
+    const ac = getCtx();
+    const source = ac.createBufferSource();
+    source.buffer = customBuffer;
+    const gain = ac.createGain();
+    gain.gain.value = volume;
+    source.connect(gain);
+    gain.connect(ac.destination);
+    source.start();
+  }
+
   return {
     play(key) {
       if (!enabled) return;
+      if (customBuffer) {
+        playCustom();
+        return;
+      }
       if (superMode) {
-        // 슈퍼 모드: 특수키에 더 강렬한 소리
         if (key === 'Enter' || key === ' ') {
           superBleat();
         } else {
           bleat();
         }
       } else {
-        // 일반 모드: Enter/Space는 좀 더 길게
         if (key === 'Enter') {
           const saved = goatType;
           goatType = 'angry';
@@ -165,6 +182,26 @@ const GoatSound = (() => {
     setType(t) { goatType = t; },
     setSuperMode(v) { superMode = v; },
     isSuperMode() { return superMode; },
-    test() { bleat(goatType); },
+    test() {
+      if (customBuffer) { playCustom(); return; }
+      bleat(goatType);
+    },
+
+    // 오디오 파일 업로드: File 객체를 받아서 AudioBuffer로 디코딩
+    async loadAudio(file) {
+      const ac = getCtx();
+      const arrayBuffer = await file.arrayBuffer();
+      customBuffer = await ac.decodeAudioData(arrayBuffer);
+      customFileName = file.name;
+      return file.name;
+    },
+
+    clearAudio() {
+      customBuffer = null;
+      customFileName = null;
+    },
+
+    getCustomFileName() { return customFileName; },
+    hasCustomAudio() { return customBuffer !== null; },
   };
 })();

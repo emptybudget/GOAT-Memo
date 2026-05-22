@@ -50,15 +50,21 @@ function updateStatus() {
 }
 
 // ───── 키 입력 처리 ─────
-editor.addEventListener('keydown', (e) => {
-  // 편집 단축키는 소리 안 냄 (Ctrl 조합)
-  if (e.ctrlKey || e.metaKey) return;
+// 순수 modifier 키만 제외하고 나머지는 모두 소리 (한글 IME 포함)
+const MODIFIER_KEYS = new Set([
+  'Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'NumLock',
+  'ScrollLock', 'OS', 'AltGraph', 'Fn', 'Dead', 'Hyper', 'Super',
+]);
 
-  // 출력 가능한 키 및 특수키
-  const printable = e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace' || e.key === ' ';
-  if (printable) {
-    GoatSound.play(e.key);
-  }
+editor.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey) return;
+  if (MODIFIER_KEYS.has(e.key)) return;
+  GoatSound.play(e.key);
+});
+
+// 한글 IME 조합 중 추가 보험 (일부 브라우저에서 keydown이 'Process'로 잡힐 때)
+editor.addEventListener('compositionupdate', () => {
+  GoatSound.play('composition');
 });
 
 editor.addEventListener('input', () => {
@@ -444,6 +450,37 @@ document.getElementById('volume-test').addEventListener('click', () => {
 
 document.getElementById('goat-type').addEventListener('change', function() {
   GoatSound.setType(this.value);
+});
+
+// ───── 오디오 파일 업로드 ─────
+document.getElementById('upload-audio-btn').addEventListener('click', () => {
+  document.getElementById('audio-file').click();
+});
+
+document.getElementById('audio-file').addEventListener('change', async function() {
+  const file = this.files[0];
+  if (!file) return;
+  try {
+    const name = await GoatSound.loadAudio(file);
+    const nameEl = document.getElementById('upload-filename');
+    nameEl.textContent = name;
+    nameEl.classList.add('has-file');
+    document.getElementById('upload-clear-btn').style.display = 'block';
+    toast('🐐 내 염소 소리 적용됨: ' + name);
+    GoatSound.test();
+  } catch (e) {
+    toast('오디오 파일을 불러올 수 없습니다.');
+  }
+  this.value = '';
+});
+
+document.getElementById('upload-clear-btn').addEventListener('click', () => {
+  GoatSound.clearAudio();
+  const nameEl = document.getElementById('upload-filename');
+  nameEl.textContent = '기본 합성음 사용 중';
+  nameEl.classList.remove('has-file');
+  document.getElementById('upload-clear-btn').style.display = 'none';
+  toast('기본 합성 염소 소리로 변경됨');
 });
 
 // ───── 모달 열기/닫기 ─────
